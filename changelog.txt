@@ -1,3 +1,7 @@
+= 2.0.5 =
+* Added support for printing Product Add-ons fields.
+* Added support for printing Delivery Slots information.
+
 = 2.0.4 =
 * Added support for TSP100IV
 

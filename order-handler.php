@@ -304,7 +304,7 @@
 		if (!empty($delivery_date))
 		{
 			$printer->add_new_line(1);
-			$printer->add_text_line("Date de retrait :");
+			$printer->add_text_line("Delivery date :");
 			$printer->set_font_magnification(1, 2);
 			$printer->add_text_line($delivery_date);
 			$printer->set_font_magnification(1, 1);
@@ -312,7 +312,7 @@
 	
 		if (!empty($delivery_date))
 		{
-			$printer->add_text_line("Horaire de retrait :");
+			$printer->add_text_line("Delivery time :");
 			$printer->set_font_magnification(1, 2);
 			$printer->add_text_line($delivery_time);
 			$printer->set_font_magnification(1, 1);

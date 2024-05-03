@@ -104,31 +104,31 @@ function star_cloudprnt_print_items(&$printer, &$selectedPrinter, &$order, &$ord
 
 		$printer->set_font_magnification(2, 2);
 
-			if (isset($item_data['product_extras']['groups']) && is_array($item_data['product_extras']['groups'])) {
+		if (isset($item_data['product_extras']['groups']) && is_array($item_data['product_extras']['groups'])) {
 			foreach ($item_data['product_extras']['groups'] as $group_id => $group) {
-					if ($group) {                        
-							foreach ($group as $field_id => $field) {
-									$field_label = pewc_get_field_label_order_meta($field, $item_data);
-							
-									$check_meta = $item_data->get_meta($field_label);							
-									$supplement_price = isset($field['price']) ? $field['price'] : 0;							
-									$formatted_supplement_price = $supplement_price > 0 ? ' (' . star_cloudprnt_format_currency($supplement_price) . ')' : '';							
-									$cleaned_meta = strip_tags($check_meta);							
-									$line_to_print = $field_label . " " . html_entity_decode($cleaned_meta) . $formatted_supplement_price;							
-									// Remove '_'
-									$line_to_print = ltrim($line_to_print, '_');							
-									if(strpos($line_to_print, '|') !== false) {
-											// If '|' is finded, line break
-											$parts = explode('|', $line_to_print);
-											foreach($parts as $part) {
-													$printer->add_text_line(trim($part));
-											}
-									} else {
-											// If not '|', print normal
-											$printer->add_text_line($line_to_print);
-									}
+				if ($group) {                        
+					foreach ($group as $field_id => $field) {
+						$field_label = pewc_get_field_label_order_meta($field, $item_data);
+						
+						$check_meta = $item_data->get_meta($field_label);
+						$supplement_price = isset($field['price']) ? $field['price'] : 0;
+						$formatted_supplement_price = $supplement_price > 0 ? ' (' . star_cloudprnt_format_currency($supplement_price) . ')' : '';
+						$cleaned_meta = strip_tags($check_meta);							
+						$line_to_print = $field_label . " " . html_entity_decode($cleaned_meta) . $formatted_supplement_price;
+						$line_to_print = ltrim($line_to_print, '_');							
+						if(strpos($line_to_print, '|') !== false) {
+							// If '|' is finded, line break
+							$parts = explode('|', $line_to_print);
+							foreach($parts as $part) {
+								$printer->add_text_line(trim($part));
 							}
+						} 
+						else {
+							// If not '|', print normal
+							$printer->add_text_line($line_to_print);
+						}
 					}
+				}
 			}
 		}
 

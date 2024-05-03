@@ -81,6 +81,35 @@
 			$printer->add_text_line(star_cloudprnt_get_column_separated_data(array(" Qty: ".
 						$item_qty." x Cost: ".$formatted_item_price,
 						$formatted_total_price), $max_chars));
+
+						if (isset($item_data['product_extras']['groups']) && is_array($item_data['product_extras']['groups'])) {
+							foreach ($item_data['product_extras']['groups'] as $group_id => $group) {
+								if ($group) {                        
+									foreach ($group as $field_id => $field) {
+										$field_label = pewc_get_field_label_order_meta($field, $item_data);
+										
+										$check_meta = $item_data->get_meta($field_label);
+										$supplement_price = isset($field['price']) ? $field['price'] : 0;
+										$formatted_supplement_price = $supplement_price > 0 ? ' (' . star_cloudprnt_format_currency($supplement_price) . ')' : '';
+										$cleaned_meta = strip_tags($check_meta);							
+										$line_to_print = $field_label . " " . html_entity_decode($cleaned_meta) . $formatted_supplement_price;
+										$line_to_print = ltrim($line_to_print, '_');							
+										if(strpos($line_to_print, '|') !== false) {
+											// If '|' is finded, line break
+											$parts = explode('|', $line_to_print);
+											foreach($parts as $part) {
+												$printer->add_text_line(trim($part));
+											}
+										} 
+										else {
+											// If not '|', print normal
+											$printer->add_text_line($line_to_print);
+										}
+									}
+								}
+							}
+						}
+
 		}
 	}
 	
@@ -268,6 +297,26 @@
 		$pw("Order Status: ".$order->get_status());
 		$order_date = date("{$date_format} {$time_format}", $order->get_date_created()->getOffsetTimestamp());
 		$pw("Order Date: {$order_date}");	
+
+		$delivery_date = $order->get_meta( 'jckwds_date' );
+		$delivery_time = $order->get_meta( 'jckwds_timeslot' );
+	
+		if (!empty($delivery_date))
+		{
+			$printer->add_new_line(1);
+			$printer->add_text_line("Date de retrait :");
+			$printer->set_font_magnification(1, 2);
+			$printer->add_text_line($delivery_date);
+			$printer->set_font_magnification(1, 1);
+		}
+	
+		if (!empty($delivery_date))
+		{
+			$printer->add_text_line("Horaire de retrait :");
+			$printer->set_font_magnification(1, 2);
+			$printer->add_text_line($delivery_time);
+			$printer->set_font_magnification(1, 1);
+		}
 
 		$printer->add_new_line(1);
 		if (isset($shipping_items['name']))

@@ -33,7 +33,7 @@ function star_cloudprnt_print_items(&$printer, &$selectedPrinter, &$order, &$ord
 
 		$sku = $product->get_sku();
 
-		$alt_name = $product->get_attribute( 'star_cp_print_name' );				// Custom attribute can be used to override the product name on receipt
+		$alt_name = $product->get_attribute( 'star_cp_print_name' );	// Custom attribute can be used to override the product name on receipt
 
 		$item_qty = wc_get_order_item_meta($item_id, "_qty", true);
 		
@@ -102,36 +102,65 @@ function star_cloudprnt_print_items(&$printer, &$selectedPrinter, &$order, &$ord
 
 		// Printing products extras 
 
-		$printer->set_font_magnification(2, 2);
+		$printer->set_font_magnification(1, 2);
 
-			if (isset($item_data['product_extras']['groups']) && is_array($item_data['product_extras']['groups'])) {
+		if (isset($item_data['product_extras']['groups']) && is_array($item_data['product_extras']['groups'])) {
 			foreach ($item_data['product_extras']['groups'] as $group_id => $group) {
-					if ($group) {                        
+					if ($group) {
 							foreach ($group as $field_id => $field) {
 									$field_label = pewc_get_field_label_order_meta($field, $item_data);
-							
-									$check_meta = $item_data->get_meta($field_label);							
-									$supplement_price = isset($field['price']) ? $field['price'] : 0;							
-									$formatted_supplement_price = $supplement_price > 0 ? ' (' . star_cloudprnt_format_currency($supplement_price) . ')' : '';							
-									$cleaned_meta = strip_tags($check_meta);							
-									$line_to_print = $field_label . " " . html_entity_decode($cleaned_meta) . $formatted_supplement_price;							
+									$check_meta = $item_data->get_meta($field_label);            
+									$cleaned_meta = strip_tags($check_meta);
+									$line_to_print = $field_label . " " . html_entity_decode($cleaned_meta);
 									// Remove '_'
-									$line_to_print = ltrim($line_to_print, '_');							
-									if(strpos($line_to_print, '|') !== false) {
-											// If '|' is finded, line break
+									$line_to_print = ltrim($line_to_print, '_');
+	
+									// Function to handle splitting and printing lines
+									function print_line_with_word_breaks($line, $word, $printer) {
+											$parts = explode($word, $line);
+											foreach ($parts as $index => $part) {
+													if (trim($part)) {
+															$printer->add_text_line(trim($part));
+													}
+													if ($index < count($parts) - 1) {
+															$printer->add_text_line($word);
+													}
+											}
+									}
+	
+									// Check for '|' first
+									if (strpos($line_to_print, '|') !== false) {
 											$parts = explode('|', $line_to_print);
-											foreach($parts as $part) {
-													$printer->add_text_line(trim($part));
+											foreach ($parts as $part) {
+													if (strpos($part, 'Suppléments') !== false) {
+															print_line_with_word_breaks($part, 'Suppléments', $printer);
+													} elseif (strpos($part, 'Ingrédients à retirer') !== false) {
+															print_line_with_word_breaks($part, 'Ingrédients à retirer', $printer);
+													} else {
+															$printer->add_text_line(trim($part));
+													}
 											}
 									} else {
-											// If not '|', print normal
-											$printer->add_text_line($line_to_print);
+											// Check for 'Suppléments' or 'Ingrédients à retirer' in normal print
+											if (strpos($line_to_print, 'Suppléments') !== false) {
+													print_line_with_word_breaks($line_to_print, 'Suppléments', $printer);
+											} elseif (strpos($line_to_print, 'Ingrédients à retirer') !== false) {
+													print_line_with_word_breaks($line_to_print, 'Ingrédients à retirer', $printer);
+											} else {
+													// If not '|', print normal
+													$line_to_print = preg_replace('/\(\d+(\.\d+)?\s?€\)\s*/', '', $line_to_print);
+													$printer->add_text_line($line_to_print);
+											}
 									}
 							}
 					}
 			}
-		}
-
+	}
+	
+	
+	
+	
+		
 		$printer->set_font_magnification(1, 1);			
 
 	}
